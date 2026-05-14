@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA | Authentication</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">AURA</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/shop.html">Shop</a>
+            <a href="/cart.html">Cart</a>
+        </div>
+        <div class="nav-actions" id="auth-links">
+            <!-- Auth injected here -->
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-card glass reveal">
+            <h2 id="auth-title" style="margin-bottom: 2rem; font-size: 2rem;">Sign In</h2>
+            <form id="auth-form">
+                <div class="form-group" id="name-group" style="display: none;">
+                    <label>Full Name</label>
+                    <input type="text" id="name" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" required placeholder="name@aura.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" required placeholder="••••••••">
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+                    <input type="checkbox" id="is-admin-toggle" style="width: auto;">
+                    <label for="is-admin-toggle" style="margin-bottom: 0; cursor: pointer;">Login/Register as Admin</label>
+                </div>
+
+                <div class="form-group" id="admin-key-group" style="display: none;">
+                    <label>Admin Secret Key</label>
+                    <input type="password" id="admin-key" placeholder="Enter Admin Key">
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="auth-btn" style="width: 100%; margin-top: 1rem;">Sign In</button>
+            </form>
+            <p style="margin-top: 2rem; text-align: center; color: var(--text-muted)" class="auth-toggle">
+                <span id="toggle-text">Don't have an account?</span> 
+                <a href="#" id="toggle-link" style="color: var(--primary); font-weight: 600;">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/store.js"></script>
+    <script>
+        const authForm = document.getElementById('auth-form');
+        const nameGroup = document.getElementById('name-group');
+        const nameInput = document.getElementById('name');
+        const authTitle = document.getElementById('auth-title');
+        const authBtn = document.getElementById('auth-btn');
+        const toggleLink = document.getElementById('toggle-link');
+        const isAdminToggle = document.getElementById('is-admin-toggle');
+        const adminKeyGroup = document.getElementById('admin-key-group');
+        const adminKeyInput = document.getElementById('admin-key');
+        const toggleText = document.getElementById('toggle-text');
+        
+        let isLogin = true;
+
+        // Initialize form state
+        function updateFormUI() {
+            authTitle.innerText = isLogin ? 'Sign In' : 'Create Account';
+            authBtn.innerText = isLogin ? 'Sign In' : 'Sign Up';
+            nameGroup.style.display = isLogin ? 'none' : 'block';
+            nameInput.required = !isLogin;
+            toggleLink.innerText = isLogin ? 'Sign Up' : 'Sign In';
+            toggleText.innerText = isLogin ? "Don't have an account?" : "Already have an account?";
+            
+            // Admin field handling
+            adminKeyGroup.style.display = isAdminToggle.checked ? 'block' : 'none';
+        }
+
+        isAdminToggle.addEventListener('change', () => {
+            adminKeyGroup.style.display = isAdminToggle.checked ? 'block' : 'none';
+        });
+
+        toggleLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLogin = !isLogin;
+            updateFormUI();
+        });
+
+        // Run once on load
+        updateFormUI();
+
+        authForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const adminKey = adminKeyInput.value;
+            
+            const endpoint = isLogin ? '/auth/login' : '/auth/register';
+            const data = { email, password };
+            
+            if (isAdminToggle.checked) {
+                data.adminKey = adminKey;
+            }
+            
+            if (!isLogin) {
+                data.name = nameInput.value;
+            }
+
+            try {
+                const res = await window.api.post(endpoint, data);
+                if (res.token) {
+                    window.store.setUser(res.user, res.token);
+                    window.location.href = res.user.isAdmin ? '/admin.html' : '/';
+                } else if (res.id && !isLogin) {
+                    alert('Registration successful! Please login.');
+                    isLogin = true;
+                    updateFormUI();
+                } else {
+                    alert(res.message || 'Authentication failed');
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
+        };
+    </script>
+</body>
+</html>

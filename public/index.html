@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA | Elite E-Commerce</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">AURA</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/shop">Shop</a>
+            <a href="/cart">Cart</a>
+        </div>
+        <div class="nav-actions" id="auth-links">
+            <!-- Auth injected here -->
+        </div>
+    </nav>
+
+    <!-- Main Content Container for SPA -->
+    <main id="app"></main>
+
+    <!-- Product Modal (Global) -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-image-container">
+                <img id="modal-img" class="modal-image" src="" alt="" style="width:100%; height:100%; object-fit:cover;">
+                <div class="thumbnail-strip" id="modal-thumbnails">
+                    <!-- Thumbnails injected here -->
+                </div>
+            </div>
+            <div class="modal-details">
+                <div class="rating-stars" id="modal-rating"></div>
+                <h1 id="modal-title" class="playfair"></h1>
+                <p id="modal-category" style="color: var(--primary); font-weight: 600; margin: 0.5rem 0 1.5rem;"></p>
+                <p id="modal-desc" style="color: var(--text-muted); line-height: 1.8;"></p>
+                
+                <ul class="feature-list" id="modal-features"></ul>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+                    <span id="modal-price" class="product-price" style="font-size: 1.8rem;"></span>
+                    <button id="modal-add-btn" class="btn btn-primary">Add to Collection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Edit Profile Modal (Global) -->
+    <div id="profile-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px; padding: 3rem;">
+            <span class="close-modal">&times;</span>
+            <h2 class="playfair" style="margin-bottom: 2rem;">Edit Profile</h2>
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="edit-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="edit-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="edit-phone" placeholder="+1 234 567 890">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="/js/api.js"></script>
+    <script src="/js/store.js"></script>
+    <script src="/js/logic.js"></script>
+    <script src="/js/views.js"></script>
+    <script src="/js/router.js"></script>
+
+    <style>
+        .btn-primary.added { background: #2ecc71; border-color: #2ecc71; }
+        .btn-outline.added { background: #2ecc71; color: white; border-color: #2ecc71; }
+        #app { min-height: calc(100vh - 80px); padding-top: 80px; }
+    </style>
+</body>
+</html>

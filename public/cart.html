@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA | Your Cart</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">AURA</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/shop.html">Shop</a>
+            <a href="/cart.html" style="color: var(--primary)">Cart</a>
+        </div>
+        <div class="nav-actions" id="auth-links">
+            <!-- Auth injected here -->
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 120px;">
+        <h1 class="playfair" style="font-size: 3rem; margin-bottom: 2rem;">Shopping Cart</h1>
+        
+        <div id="cart-content" class="cart-layout">
+            <div id="cart-items">
+                <!-- Items injected here -->
+            </div>
+            <div class="summary-card glass">
+                <h3 style="margin-bottom: 2rem;">Order Summary</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <span>Subtotal</span>
+                    <span id="subtotal">$0.00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <span>Shipping</span>
+                    <span>Calculated at next step</span>
+                </div>
+                <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 2rem 0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; font-weight: 800; font-size: 1.2rem;">
+                    <span>Total</span>
+                    <span id="total">$0.00</span>
+                </div>
+                <button onclick="checkout()" class="btn btn-primary" style="width: 100%;">Checkout Now</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/store.js"></script>
+    <script>
+        async function loadCart() {
+            if (!window.store.user) {
+                document.getElementById('cart-content').innerHTML = `
+                    <div style="text-align: center; grid-column: 1 / -1; padding: 5rem;">
+                        <h2 style="margin-bottom: 1rem;">Your cart is lonely.</h2>
+                        <a href="/auth.html" class="btn btn-primary">Login to view cart</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Subscribe to store updates
+            window.store.subscribe(() => renderCart());
+            
+            await window.store.fetchCart();
+        }
+
+        function renderCart() {
+            const items = window.store.cart;
+            const container = document.getElementById('cart-items');
+            
+            if (items.length === 0) {
+                container.innerHTML = `<p style="padding: 2rem;">No items in cart yet.</p>`;
+                updateTotals(0);
+                return;
+            }
+
+            container.innerHTML = items.map(p => `
+                <div class="cart-item glass reveal">
+                    <img src="${p.image_url}" alt="${p.name}">
+                    <div class="cart-details">
+                        <h3>${p.name}</h3>
+                        <p style="color: var(--primary); font-weight: 700;">$${p.price.toLocaleString()}</p>
+                    </div>
+                    <div class="quantity-controls" style="display: flex; align-items: center; gap: 1rem;">
+                        <button onclick="window.store.updateQuantity('${p.id}', ${p.quantity - 1})" class="btn-qty"><i class="fa-solid fa-minus"></i></button>
+                        <span style="font-weight: 700; min-width: 20px; text-align: center;">${p.quantity}</span>
+                        <button onclick="window.store.updateQuantity('${p.id}', ${p.quantity + 1})" class="btn-qty"><i class="fa-solid fa-plus"></i></button>
+                        
+                        <button onclick="window.store.removeFromCart('${p.id}')" style="margin-left: 2rem; background: none; border: none; color: #ff4757; cursor: pointer; font-size: 1.2rem;">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            const total = items.reduce((acc, p) => acc + (p.price * p.quantity), 0);
+            updateTotals(total);
+        }
+
+        function updateTotals(total) {
+            document.getElementById('subtotal').innerText = `$${total.toLocaleString()}`;
+            document.getElementById('total').innerText = `$${total.toLocaleString()}`;
+        }
+
+        async function checkout() {
+            const total = window.store.cart.reduce((acc, p) => acc + (p.price * p.quantity), 0);
+            if (total === 0) return alert('Cart is empty');
+
+            const res = await window.api.post('/user/orders', { totalAmount: total });
+            if (res.orderId) {
+                alert(`Order processing... ID: #${res.orderId}`);
+                window.location.href = '/';
+            }
+        }
+        loadCart();
+    </script>
+</body>
+</html>

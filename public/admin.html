@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA | Admin Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+        .admin-form-card {
+            padding: 2.5rem;
+            height: fit-content;
+        }
+        .product-list-card {
+            padding: 2.5rem;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+        .admin-table th, .admin-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .admin-table th {
+            color: var(--primary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+        .delete-btn {
+            color: #ff4757;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">AURA</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/shop.html">Shop</a>
+            <a href="/cart.html">Cart</a>
+        </div>
+        <div class="nav-actions" id="auth-links">
+            <!-- Auth injected here -->
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 120px;">
+        <h1 class="playfair" style="font-size: 3rem; margin-bottom: 2rem;">Admin Dashboard</h1>
+        
+        <div class="admin-grid">
+            <!-- Add Product Form -->
+            <div class="admin-form-card glass reveal">
+                <h2 id="form-title" style="margin-bottom: 2rem; color: var(--primary)">Add New Product</h2>
+                <form id="add-product-form">
+                    <input type="hidden" id="editing-id">
+                    <div class="form-group">
+                        <label>Product Name</label>
+                        <input type="text" id="name" required placeholder="Luxury Watch">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Price ($)</label>
+                            <input type="number" step="0.01" id="price" required placeholder="999.99">
+                        </div>
+                        <div class="form-group">
+                            <label>Stock</label>
+                            <input type="number" id="stock" required placeholder="10">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="category" class="glass" style="width: 100%; padding: 1rem; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white; outline: none;">
+                            <option value="Electronics">Electronics</option>
+                            <option value="Audio">Audio</option>
+                            <option value="Fashion">Fashion</option>
+                            <option value="Luxury">Luxury</option>
+                            <option value="Home">Home</option>
+                            <option value="Gaming">Gaming</option>
+                            <option value="Wellness">Wellness</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Product Imagery</label>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <button type="button" onclick="toggleImageSource('url')" id="btn-url" class="btn btn-outline" style="flex: 1; padding: 0.5rem;">URL Mode</button>
+                            <button type="button" onclick="toggleImageSource('file')" id="btn-file" class="btn btn-outline" style="flex: 1; padding: 0.5rem;">Upload Mode</button>
+                        </div>
+                        
+                        <div id="url-inputs">
+                            <label style="font-size: 0.8rem; opacity: 0.8;">Main Image URL</label>
+                            <input type="text" id="image_url" placeholder="https://unsplash.com/main-image">
+                            <label style="font-size: 0.8rem; opacity: 0.8; margin-top: 1rem; display: block;">Secondary Gallery URLs (Comma separated)</label>
+                            <input type="text" id="gallery_urls" placeholder="url1, url2, url3...">
+                        </div>
+
+                        <div id="file-inputs" style="display: none;">
+                            <label style="font-size: 0.8rem; opacity: 0.8;">Select Images (Main + Secondary, max 6)</label>
+                            <input type="file" id="image_files" multiple accept="image/*" class="glass" style="padding: 0.5rem;">
+                        </div>
+                        
+                        <p id="upload-status" style="font-size: 0.8rem; color: var(--primary); margin-top: 0.5rem; display: none;"></p>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="description" rows="4" style="width: 100%; padding: 1rem; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white; outline: none; font-family: inherit;" required placeholder="Describe the masterpiece..."></textarea>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" id="submit-btn" class="btn btn-primary" style="flex: 2;">Create Product</button>
+                        <button type="button" id="cancel-btn" onclick="resetForm()" class="btn btn-outline" style="flex: 1; display: none;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Existing Products List -->
+            <div class="product-list-card glass reveal" style="animation-delay: 0.2s;">
+                <h2 style="margin-bottom: 2rem;">Manage Catalog</h2>
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-product-list">
+                            <!-- Items injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/store.js"></script>
+    <script>
+        let imageSource = 'url';
+        let allProducts = [];
+
+        async function checkAdmin() {
+            if (!window.store.user || !window.store.user.isAdmin) {
+                alert('Access Denied: Admins Only');
+                window.location.href = '/';
+                return;
+            }
+            loadAdminProducts();
+        }
+
+        function toggleImageSource(source) {
+            imageSource = source;
+            document.getElementById('url-inputs').style.display = source === 'url' ? 'block' : 'none';
+            document.getElementById('file-inputs').style.display = source === 'file' ? 'block' : 'none';
+            document.getElementById('btn-url').style.borderColor = source === 'url' ? 'var(--primary)' : 'var(--glass-border)';
+            document.getElementById('btn-file').style.borderColor = source === 'file' ? 'var(--primary)' : 'var(--glass-border)';
+        }
+
+        async function loadAdminProducts() {
+            const products = await window.api.get('/products');
+            allProducts = products;
+            const tbody = document.getElementById('admin-product-list');
+            tbody.innerHTML = products.map(p => `
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <img src="${p.image_url}" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover;">
+                            <span style="font-weight: 600;">${p.name}</span>
+                        </div>
+                    </td>
+                    <td>${p.category}</td>
+                    <td style="color: var(--primary); font-weight: 700;">$${p.price.toLocaleString()}</td>
+                    <td>${p.stock}</td>
+                    <td>
+                        <div style="display: flex; gap: 0.8rem;">
+                            <button onclick="editProduct('${p._id}')" style="background:none; border:none; color: var(--secondary); cursor:pointer; font-size:1.1rem;">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteProduct('${p._id}')" class="delete-btn">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editProduct(id) {
+            const p = allProducts.find(x => x._id === id);
+            if (!p) return;
+
+            document.getElementById('editing-id').value = p._id;
+            document.getElementById('name').value = p.name;
+            document.getElementById('price').value = p.price;
+            document.getElementById('stock').value = p.stock;
+            document.getElementById('category').value = p.category;
+            document.getElementById('image_url').value = p.image_url;
+            document.getElementById('gallery_urls').value = p.images ? p.images.filter(img => img !== p.image_url).join(', ') : '';
+            document.getElementById('description').value = p.description;
+
+            document.getElementById('form-title').innerText = 'Edit Product';
+            document.getElementById('submit-btn').innerText = 'Update Product';
+            document.getElementById('cancel-btn').style.display = 'block';
+            
+            toggleImageSource('url');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('add-product-form').reset();
+            document.getElementById('editing-id').value = '';
+            document.getElementById('form-title').innerText = 'Add New Product';
+            document.getElementById('submit-btn').innerText = 'Create Product';
+            document.getElementById('cancel-btn').style.display = 'none';
+            document.getElementById('upload-status').style.display = 'none';
+            toggleImageSource('url');
+        }
+
+        document.getElementById('add-product-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const editingId = document.getElementById('editing-id').value;
+            let finalImageUrl = document.getElementById('image_url').value;
+            let finalImages = [];
+
+            // Handle File Upload if selected
+            if (imageSource === 'file') {
+                const fileInput = document.getElementById('image_files');
+                if (fileInput.files.length > 0) {
+                    document.getElementById('upload-status').innerText = 'Uploading images...';
+                    document.getElementById('upload-status').style.display = 'block';
+                    
+                    const formData = new FormData();
+                    for (let i = 0; i < fileInput.files.length; i++) {
+                        formData.append('images', fileInput.files[i]);
+                    }
+                    
+                    const uploadRes = await fetch('/api/products/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: formData
+                    });
+                    const uploadData = await uploadRes.json();
+                    if (uploadData.imageUrls && uploadData.imageUrls.length > 0) {
+                        finalImageUrl = uploadData.imageUrls[0];
+                        finalImages = uploadData.imageUrls;
+                    } else {
+                        alert('Image upload failed');
+                        return;
+                    }
+                } else if (!editingId) {
+                    alert('Please select files to upload');
+                    return;
+                }
+            } else {
+                // URL Mode
+                const secondaryUrls = document.getElementById('gallery_urls').value
+                    .split(',')
+                    .map(u => u.trim())
+                    .filter(u => u !== '');
+                
+                finalImages = [finalImageUrl, ...secondaryUrls];
+            }
+
+            const data = {
+                name: document.getElementById('name').value,
+                price: parseFloat(document.getElementById('price').value),
+                stock: parseInt(document.getElementById('stock').value),
+                category: document.getElementById('category').value,
+                image_url: finalImageUrl,
+                description: document.getElementById('description').value,
+                images: finalImages
+            };
+
+            const method = editingId ? 'PUT' : 'POST';
+            const url = editingId ? `/api/products/${editingId}` : '/products';
+
+            const res = await window.api[method.toLowerCase()](url, data);
+            if (res._id) {
+                alert(editingId ? 'Product updated!' : 'Product added!');
+                resetForm();
+                loadAdminProducts();
+            } else {
+                alert(res.message || 'Error occurred');
+            }
+        };
+
+        async function deleteProduct(id) {
+            if (!confirm('Are you sure you want to remove this product?')) return;
+            const res = await fetch(`/api/products/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            const result = await res.json();
+            if (res.ok) {
+                loadAdminProducts();
+            } else {
+                alert(result.message);
+            }
+        }
+
+        checkAdmin();
+    </script>
+</body>
+</html>

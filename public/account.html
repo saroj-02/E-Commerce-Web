@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA | My Account</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .profile-container {
+            max-width: 1000px;
+            margin: 120px auto 50px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        .profile-sidebar {
+            padding: 2rem;
+            text-align: center;
+            height: fit-content;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #000;
+        }
+
+        .profile-main {
+            padding: 3rem;
+        }
+
+        .info-group {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .info-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .order-list {
+            margin-top: 1rem;
+        }
+
+        .order-item {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="logo">AURA</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/shop.html">Shop</a>
+            <a href="/cart.html">Cart</a>
+        </div>
+        <div class="nav-actions" id="auth-links">
+            <!-- Auth injected here -->
+        </div>
+    </nav>
+
+    <div class="container profile-container">
+        <aside class="profile-sidebar glass reveal">
+            <div class="avatar" id="user-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <h2 id="sidebar-name">Loading...</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Member</p>
+            <button onclick="window.store.logout()" class="btn btn-outline" style="width: 100%;">Logout</button>
+        </aside>
+
+        <main class="profile-main glass reveal" style="animation-delay: 0.2s;">
+            <h1 class="playfair" style="margin-bottom: 2.5rem;">Account Details</h1>
+
+            <div class="info-group">
+                <div class="info-label">FULL NAME</div>
+                <div class="info-value" id="profile-name">---</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">EMAIL ADDRESS</div>
+                <div class="info-value" id="profile-email">---</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">MEMBER SINCE</div>
+                <div class="info-value" id="profile-date">---</div>
+            </div>
+
+            <h2 class="playfair" style="margin: 3rem 0 1.5rem;">Order History</h2>
+            <div id="order-history" class="order-list">
+                <!-- Orders injected here -->
+            </div>
+
+            <h2 class="playfair" style="margin: 3rem 0 1.5rem;">My Wishlist</h2>
+            <div id="wishlist-container" class="wishlist-grid">
+                <!-- Wishlist injected here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-image-container">
+                <img id="modal-img" class="modal-image" src="" alt=""
+                    style="width:100%; height:100%; object-fit:cover;">
+                <div class="thumbnail-strip" id="modal-thumbnails">
+                    <!-- Thumbnails injected here -->
+                </div>
+            </div>
+            <div class="modal-details">
+                <div class="rating-stars" id="modal-rating">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star-half-stroke"></i>
+                    <span style="margin-left: 0.5rem; color: var(--text-muted)">(128 Reviews)</span>
+                </div>
+                <h1 id="modal-title" class="playfair"></h1>
+                <p id="modal-category" style="color: var(--primary); font-weight: 600; margin: 0.5rem 0 1.5rem;"></p>
+                <p id="modal-desc" style="color: var(--text-muted); line-height: 1.8;"></p>
+
+                <ul class="feature-list" id="modal-features"></ul>
+
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+                    <span id="modal-price" class="product-price" style="font-size: 1.8rem;"></span>
+                    <button id="modal-add-btn" class="btn btn-primary">Add to Collection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/store.js"></script>
+    <script>
+        let wishlistData = [];
+        let modal, wishlistContainer;
+
+        // Initialize script after DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            modal = document.getElementById('product-modal');
+            wishlistContainer = document.getElementById('wishlist-container');
+
+            // Initial load sequence
+            init();
+
+            // Subscribe for future updates
+            window.store.subscribe(renderProfile);
+        });
+
+        async function init() {
+            renderProfile(); // Initial render with local data
+            await window.store.fetchProfile(); // Fetch fresh data
+            await loadOrders();
+            await loadWishlist();
+        }
+
+        async function loadOrders() {
+            try {
+                const orders = await window.store.fetchOrders();
+                const orderContainer = document.getElementById('order-history');
+                if (!orderContainer) return;
+
+                if (orders.length === 0) {
+                    orderContainer.innerHTML = '<p style="color: var(--text-muted)">No orders placed yet.</p>';
+                } else {
+                    orderContainer.innerHTML = orders.map(o => `
+                        <div class="order-item glass" style="flex-direction: column; align-items: stretch; gap: 1rem;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--primary)">Order #${o._id.slice(-6)}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted)">${new Date(o.createdAt).toLocaleDateString()}</div>
+                                </div>
+                                <div style="text-align: right">
+                                    <div style="font-weight: 800">$${o.totalAmount.toLocaleString()}</div>
+                                    <div style="font-size: 0.8rem; color: var(--primary); text-transform: uppercase">${o.status}</div>
+                                </div>
+                            </div>
+                            <div class="order-products" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                ${o.items.map(item => `
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                        <span>${item.product ? item.product.name : 'Unknown Product'} x ${item.quantity}</span>
+                                        <span style="color: var(--text-muted)">$${(item.price * item.quantity).toLocaleString()}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error("Error loading orders:", err);
+            }
+        }
+
+        async function loadWishlist() {
+            try {
+                const wishlist = await window.store.fetchWishlist();
+                wishlistData = wishlist;
+                renderWishlistUI();
+            } catch (err) {
+                console.error("Error loading wishlist:", err);
+            }
+        }
+
+        function renderWishlistUI() {
+            if (!wishlistContainer) return;
+            if (wishlistData.length === 0) {
+                wishlistContainer.innerHTML = '<p style="color: var(--text-muted)">No liked products.</p>';
+            } else {
+                wishlistContainer.innerHTML = wishlistData.map(p => `
+                    <div class="product-card glass reveal" style="padding: 1rem; cursor: pointer;" onclick="openProduct('${p._id}')">
+                        <img src="${p.image_url}" style="height: 150px; width: 100%; object-fit: cover; border-radius: 10px;" onerror="this.src='https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80'">
+                        <h4 style="margin: 0.5rem 0">${p.name}</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--primary); font-weight: 700">$${p.price.toLocaleString()}</span>
+                            <button onclick="handleAddToCart(event, '${p._id}')" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem">Add</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function openProduct(id) {
+            const p = wishlistData.find(x => x._id === id);
+            if (!p || !modal) return;
+
+            document.getElementById('modal-img').src = p.image_url;
+            document.getElementById('modal-title').innerText = p.name;
+            document.getElementById('modal-category').innerText = p.category;
+            document.getElementById('modal-desc').innerText = p.description;
+            document.getElementById('modal-price').innerText = `$${p.price.toLocaleString()}`;
+
+            const thumbContainer = document.getElementById('modal-thumbnails');
+            const images = p.images && p.images.length > 0 ? p.images : [p.image_url];
+            thumbContainer.innerHTML = images.map((img, i) => `
+                <img src="${img}" class="thumbnail ${i === 0 ? 'active' : ''}" 
+                     onclick="switchModalImage(this, '${img}')">
+            `).join('');
+
+            const features = p.features || ['Premium Build Quality', 'Sustainable Materials', 'Exclusive Design', '2-Year Warranty'];
+            document.getElementById('modal-features').innerHTML = features.map(f =>
+                `<li><i class="fa-solid fa-circle-check"></i> ${f}</li>`
+            ).join('');
+
+            document.getElementById('modal-add-btn').onclick = () => handleAddToCart(null, p._id, true);
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        async function handleAddToCart(e, id, isModal = false) {
+            if (e) e.stopPropagation();
+            const success = await window.store.addToCart(id);
+            if (success) {
+                const btn = isModal ? document.getElementById('modal-add-btn') : e.currentTarget;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Added';
+                btn.classList.add('added');
+                btn.disabled = true;
+
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('added');
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }
+
+        function switchModalImage(el, src) {
+            document.getElementById('modal-img').src = src;
+            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // Handle Modal Closing
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('close-modal') || e.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        function renderProfile() {
+            try {
+                const user = window.store.user;
+                if (!user) {
+                    window.location.href = '/auth.html';
+                    return;
+                }
+
+                const elements = {
+                    sidebar: document.getElementById('sidebar-name'),
+                    name: document.getElementById('profile-name'),
+                    email: document.getElementById('profile-email'),
+                    date: document.getElementById('profile-date'),
+                    avatar: document.getElementById('user-avatar')
+                };
+
+                if (elements.sidebar) elements.sidebar.innerText = user.name;
+                if (elements.name) elements.name.innerText = user.name;
+                if (elements.email) elements.email.innerText = user.email;
+
+                if (elements.date && user.createdAt) {
+                    elements.date.innerText = new Date(user.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    });
+                }
+
+                if (elements.avatar) {
+                    elements.avatar.innerHTML = user.name.charAt(0).toUpperCase();
+                }
+            } catch (err) {
+                console.error("Error rendering profile:", err);
+            }
+        }
+    </script>
+</body>
+
+</html>
