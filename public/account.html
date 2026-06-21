@@ -180,7 +180,10 @@
             init();
 
             // Subscribe for future updates
-            window.store.subscribe(renderProfile);
+            window.store.subscribe(() => {
+                renderProfile();
+                loadWishlist();
+            });
         });
 
         async function init() {
