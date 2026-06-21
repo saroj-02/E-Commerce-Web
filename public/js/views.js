@@ -119,15 +119,15 @@ async function renderAuth() {
                 <h2 id="auth-title" style="margin-bottom: 2rem; font-size: 2rem;">Sign In</h2>
                 <form id="auth-form">
                     <div class="form-group" id="name-group" style="display: none;">
-                        <label>Full Name</label>
+                        <label for="reg-name">Full Name</label>
                         <input type="text" id="reg-name" placeholder="John Doe">
                     </div>
                     <div class="form-group">
-                        <label>Email Address</label>
+                        <label for="auth-email">Email Address</label>
                         <input type="email" id="auth-email" required placeholder="name@aura.com">
                     </div>
                     <div class="form-group">
-                        <label>Password</label>
+                        <label for="auth-pass">Password</label>
                         <input type="password" id="auth-pass" required placeholder="••••••••">
                     </div>
 
@@ -137,7 +137,7 @@ async function renderAuth() {
                     </div>
 
                     <div class="form-group" id="admin-key-group" style="display: none;">
-                        <label>Admin Secret Key</label>
+                        <label for="admin-key">Admin Secret Key</label>
                         <input type="password" id="admin-key" placeholder="Enter Admin Key">
                     </div>
 
@@ -168,21 +168,21 @@ async function renderAdmin() {
                     <form id="add-product-form">
                         <input type="hidden" id="editing-id">
                         <div class="form-group">
-                            <label>Product Name</label>
+                            <label for="name">Product Name</label>
                             <input type="text" id="name" required placeholder="Luxury Watch">
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Price ($)</label>
+                                <label for="price">Price ($)</label>
                                 <input type="number" step="0.01" id="price" required placeholder="999.99">
                             </div>
                             <div class="form-group">
-                                <label>Stock</label>
+                                <label for="stock">Stock</label>
                                 <input type="number" id="stock" required placeholder="10">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Category</label>
+                            <label for="category">Category</label>
                             <select id="category" class="glass" style="width: 100%; padding: 1rem; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white; outline: none;">
                                 <option value="Electronics">Electronics</option>
                                 <option value="Audio">Audio</option>
@@ -194,28 +194,28 @@ async function renderAdmin() {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Product Imagery</label>
+                            <div style="font-size:0.95rem; color: var(--text-muted); margin-bottom:0.6rem;">Product Imagery</div>
                             <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                                 <button type="button" onclick="toggleImageSource('url')" id="btn-url" class="btn btn-outline" style="flex: 1; padding: 0.5rem;">URL Mode</button>
                                 <button type="button" onclick="toggleImageSource('file')" id="btn-file" class="btn btn-outline" style="flex: 1; padding: 0.5rem;">Upload Mode</button>
                             </div>
                             
                             <div id="url-inputs">
-                                <label style="font-size: 0.8rem; opacity: 0.8;">Main Image URL</label>
+                                <label for="image_url" style="font-size: 0.8rem; opacity: 0.8;">Main Image URL</label>
                                 <input type="text" id="image_url" placeholder="https://unsplash.com/main-image">
-                                <label style="font-size: 0.8rem; opacity: 0.8; margin-top: 1rem; display: block;">Secondary Gallery URLs (Comma separated)</label>
+                                <label for="gallery_urls" style="font-size: 0.8rem; opacity: 0.8; margin-top: 1rem; display: block;">Secondary Gallery URLs (Comma separated)</label>
                                 <input type="text" id="gallery_urls" placeholder="url1, url2, url3...">
                             </div>
 
                             <div id="file-inputs" style="display: none;">
-                                <label style="font-size: 0.8rem; opacity: 0.8;">Select Images (Main + Secondary, max 6)</label>
+                                <label for="image_files" style="font-size: 0.8rem; opacity: 0.8;">Select Images (Main + Secondary, max 6)</label>
                                 <input type="file" id="image_files" multiple accept="image/*" class="glass" style="padding: 0.5rem;">
                             </div>
                             
                             <p id="upload-status" style="font-size: 0.8rem; color: var(--primary); margin-top: 0.5rem; display: none;"></p>
                         </div>
                         <div class="form-group">
-                            <label>Description</label>
+                            <label for="description">Description</label>
                             <textarea id="description" rows="4" style="width: 100%; padding: 1rem; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white; outline: none; font-family: inherit;" required placeholder="Describe the masterpiece..."></textarea>
                         </div>
                         <div style="display: flex; gap: 1rem;">
