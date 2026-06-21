@@ -549,6 +549,7 @@ document.addEventListener('click', e => {
 window.store.subscribe(() => {
     const path = window.location.pathname;
     if (path === '/cart') renderCartUI();
+    if (path === '/account' || path === '/account.html') loadWishlist();
     updateAddToCartButtons();
 });
 
