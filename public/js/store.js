@@ -47,14 +47,16 @@ const store = {
     },
 
     async fetchProfile() {
-        if (!this.user) return null;
         const user = await window.api.get('/user/profile');
-        if (user && user._id) {
-            this.user = { ...this.user, ...user, id: user._id };
+        const userId = user && (user._id || user.id);
+        if (userId) {
+            this.user = { ...this.user, ...user, id: user._id || user.id };
             localStorage.setItem('user', JSON.stringify(this.user));
             this.notify();
+            return this.user;
         }
-        return this.user;
+        console.warn('fetchProfile did not return a valid user:', user);
+        return null;
     },
 
     async fetchOrders() {
@@ -84,10 +86,17 @@ const store = {
     },
 
     async fetchWishlist() {
-        if (!this.user) return [];
+        if (!this.user) {
+            await this.fetchProfile();
+            if (!this.user) return [];
+        }
         try {
             const list = await window.api.get('/user/wishlist');
-            return Array.isArray(list) ? list : [];
+            if (!Array.isArray(list)) {
+                console.warn('Wishlist response was not an array:', list);
+                return [];
+            }
+            return list;
         } catch (err) {
             console.error("Wishlist fetch error:", err);
             return [];

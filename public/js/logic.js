@@ -397,16 +397,6 @@ async function handleAddToCart(btn, e, id) {
     }
 }
 
-async function toggleLike(e, id) {
-    e.stopPropagation();
-    const liked = await window.store.toggleWishlist(id);
-    const btn = document.getElementById(`like-${id}`);
-    if (btn) {
-        btn.classList.toggle('liked', liked);
-        btn.innerHTML = `<i class="fa-${liked ? 'solid' : 'regular'} fa-heart"></i>`;
-    }
-}
-
 // Admin Logic
 let adminImageSource = 'url';
 
